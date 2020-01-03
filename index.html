@@ -1,10 +1,44 @@
 <html>
-<title>
-	SpaceChem Snake
-</title>
+
+<head>
+	<title>
+		SpaceChem Snake
+	</title>
+	<style>
+		body {
+			margin: 0px;
+		}
+
+		#game {
+			display: none;
+			margin: auto;
+			width: 100vmin;
+			height: 100vmin;
+		}
+
+		.ready #game {
+			display: block;
+		}
+
+		.ready .upload-window {
+			display: none;
+		}
+
+		#hidden-canvas {
+			display: none;
+		}
+	</style>
+</head>
 
 <body>
-	WIP
+	<div class="upload-window">
+		<input type="file" id="texupload" accept=".png" />
+		<input type="file" id="audioupload" accept=".wav" />
+		<button id="upload-button">Upload files</button>
+	</div>
+	<canvas width=560 height=560 id="game"></canvas>
+	<canvas width=1024 height=1024 id="hidden-canvas"></canvas>
+	<script src="index.js"></script>
 </body>
 
 </html>
