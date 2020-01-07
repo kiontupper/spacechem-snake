@@ -7,6 +7,8 @@
 	<style>
 		body {
 			margin: 0px;
+			background-color: #ccc;
+			font-family: sans-serif
 		}
 
 		#game {
@@ -14,6 +16,7 @@
 			margin: auto;
 			width: 100vmin;
 			height: 100vmin;
+			background-color: white;
 		}
 
 		.ready #game {
@@ -22,6 +25,19 @@
 
 		.ready .upload-window {
 			display: none;
+		}
+
+		#score {
+			display: none;
+			margin: -100vmin auto 0;
+			padding: 1rem;
+			width: 100vmin;
+			box-sizing: border-box;
+			position: relative;
+		}
+
+		.ready #score {
+			display: block;
 		}
 
 		#hidden-canvas {
@@ -36,7 +52,8 @@
 		<input type="file" id="audioupload" accept=".wav" />
 		<button id="upload-button">Upload files</button>
 	</div>
-	<canvas width=560 height=560 id="game"></canvas>
+	<canvas width=1610 height=1610 id="game"></canvas>
+	<div id="score"></div>
 	<canvas width=1024 height=1024 id="hidden-canvas"></canvas>
 	<script src="index.js"></script>
 </body>

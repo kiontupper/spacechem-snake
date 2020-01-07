@@ -9,7 +9,7 @@ var canvas = document.getElementById("game")
 /** @type {CanvasRenderingContext2D} */
 var context = canvas.getContext("2d")
 
-const SPRITE_SIZE = 28
+const SPRITE_SIZE = 32
 
 document.getElementById("upload-button").addEventListener("click", () => {
 	/** @type {HTMLInputElement} */
@@ -22,6 +22,9 @@ document.getElementById("upload-button").addEventListener("click", () => {
 	let audioel = document.getElementById("audioupload")
 	audio = new Audio(URL.createObjectURL(audioel.files[0]))
 	window.audio = audio
+
+	audio.preload = "auto"
+	audio.onended = () => audio.currentTime = 0
 })
 
 // let pipes = {
@@ -100,7 +103,7 @@ let pipeIDs = [
  * @param {Number[]} pipe
  */
 function draw(context, x, y, pipe) {
-	context.drawImage(pipe[0] ? rtex : tex, pipe[1], pipe[2], pipe[3], pipe[4], x * SPRITE_SIZE, canvas.height - y * SPRITE_SIZE - pipe[5], pipe[3], pipe[4])
+	context.drawImage(pipe[0] ? rtex : tex, pipe[1], pipe[2], pipe[3], pipe[4], 5 + x * SPRITE_SIZE, 5 + y * SPRITE_SIZE - pipe[5], pipe[3], pipe[4])
 }
 
 /** board[x][y] = [sourceDir, nextDir] || []
@@ -111,12 +114,12 @@ let headX = 0
 let headY = 0
 let tailX = 0
 let tailY = 0
-let length = 2
+let length = 3
 let nextDir = 2
 let facing = 2
 let opposites = [0, 3, 4, 1, 2]
 let dx = [0, 0, 1, 0, -1]
-let dy = [0, 1, 0, -1, 0]
+let dy = [0, -1, 0, 1, 0]
 let maxX = 0
 let maxY = 0
 
@@ -131,8 +134,8 @@ function init() {
 	rcontext.restore()
 	rtex = rcanvas
 
-	let width = Math.floor(canvas.width / SPRITE_SIZE)
-	let height = Math.floor(canvas.height / SPRITE_SIZE)
+	let width = Math.floor((canvas.width - 10) / SPRITE_SIZE)
+	let height = Math.floor((canvas.height - 10) / SPRITE_SIZE)
 	for (let i = 0; i < width; i++) {
 		board[i] = []
 		for (let j = 0; j < height; j++) {
@@ -141,9 +144,10 @@ function init() {
 	}
 	headX = Math.ceil(width / 2)
 	headY = Math.ceil(height / 2)
-	tailX = headX - 1
+	tailX = headX - 2
 	tailY = headY
 	board[headX][headY] = [4, 0]
+	board[headX - 1][headY] = [4, 2]
 	board[tailX][tailY] = [0, 2]
 	maxX = width - 1
 	maxY = height - 1
@@ -155,7 +159,7 @@ function init() {
 
 function redraw() {
 	context.clearRect(0, 0, canvas.width, canvas.height)
-	for (let y = maxY; y >= 0; y--) {
+	for (let y = 0; y <= maxY; y++) {
 		for (let x = 0; x <= maxX; x++) {
 			if (board[x][y] == "f") {
 				draw(context, x, y, pipes.fruit)
@@ -164,6 +168,7 @@ function redraw() {
 			}
 		}
 	}
+	document.getElementById("score").innerText = "Score: " + (length - 3)
 }
 
 function tick() {
@@ -173,11 +178,17 @@ function tick() {
 	let nextX = headX + dx[facing]
 	let nextY = headY + dy[facing]
 	if (nextX < 0 || nextY < 0 || nextX > maxX || nextY > maxY || (board[nextX][nextY] !== "f" && board[nextX][nextY].length > 0)) {
-		alert("Game over!")
+		board[headX][headY][1] = facing
+		redraw()
+		draw(context, nextX, nextY, pipes[pipeIDs[opposites[facing]][0]])
 		return
 	}
 	if (board[nextX][nextY] === "f") {
 		length++
+		board[headX][headY][1] = facing
+		headX = nextX
+		headY = nextY
+		board[headX][headY] = [opposites[facing], 0]
 		setFruit()
 		audio.play()
 	} else {
@@ -186,13 +197,13 @@ function tick() {
 		tailX += dx[taildir]
 		tailY += dy[taildir]
 		board[tailX][tailY][0] = 0
+		board[headX][headY][1] = facing
+		headX = nextX
+		headY = nextY
+		board[headX][headY] = [opposites[facing], 0]
 	}
-	board[headX][headY][1] = facing
-	headX = nextX
-	headY = nextY
-	board[headX][headY] = [opposites[facing], 0]
 	redraw()
-	setTimeout(tick, Math.max(Math.min(500, 5000 / length), 100))
+	setTimeout(tick, Math.max(Math.min(500, 1000 / (10 * (Math.sqrt(length - 2) / (6)) + 2)), 100))
 }
 
 function randomRange(min, max) {
@@ -202,6 +213,8 @@ function randomRange(min, max) {
 function setFruit() {
 	let x = randomRange(0, maxX)
 	let y = randomRange(0, maxY)
+	console.log(x, y, headX, headY, tailX, tailY)
+	console.log(board[x][y], board[x][y].length)
 	if (board[x][y].length !== 0) setFruit()
 	else board[x][y] = "f"
 }
@@ -210,19 +223,19 @@ function setFruit() {
 onkeyup = event => {
 	switch (event.key) {
 		case "ArrowUp":
-		case "W":
+		case "w":
 			nextDir = 1
 			break
 		case "ArrowRight":
-		case "D":
+		case "d":
 			nextDir = 2
 			break
 		case "ArrowDown":
-		case "S":
+		case "s":
 			nextDir = 3
 			break
 		case "ArrowLeft":
-		case "A":
+		case "a":
 			nextDir = 4
 			break
 	}
